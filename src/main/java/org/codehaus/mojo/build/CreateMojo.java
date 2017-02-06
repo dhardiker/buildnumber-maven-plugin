@@ -266,6 +266,13 @@ public class CreateMojo
                     {
                         itemAry[i] = now;
                     }
+                    else if ( s.equals( "timestamp36" ) )
+                    {
+                        long time = now.getTime();
+                        String timeInBase36 = Long.toString(time, 36);
+                        String leftPadWithZerosTo10Characters = String.format("%10s", timeInBase36).replace(" ", "0");
+                        itemAry[i] = leftPadWithZerosTo10Characters;
+                    }
                     else if ( s.startsWith( "scmVersion" ) )
                     {
                         useScm = true;
