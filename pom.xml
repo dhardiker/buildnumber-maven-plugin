@@ -27,6 +27,13 @@
     </license>
   </licenses>
 
+  <distributionManagement>
+    <repository>
+      <id>nexus</id>
+      <url>https://nexus.abundanceoperations.com/repository/maven-releases</url>
+    </repository>
+  </distributionManagement>
+
   <developers>
     <developer>
       <id>woodj</id>
