@@ -268,10 +268,11 @@ public class CreateMojo
                     }
                     else if ( s.equals( "timestamp36" ) )
                     {
-                        long time = now.getTime();
-                        String timeInBase36 = Long.toString(time, 36);
-                        String leftPadWithZerosTo10Characters = String.format("%10s", timeInBase36).replace(" ", "0");
-                        itemAry[i] = leftPadWithZerosTo10Characters;
+                        long timeMillis = getRevisionTimestamp().getTime();
+                        long timeSecs = timeMillis / 1000;
+                        // This will be 6 chars for dates < December 2038 (zzzzzz)
+                        String timeInBase36 = Long.toString(timeSecs, 36);
+                        itemAry[i] = timeInBase36;
                     }
                     else if ( s.startsWith( "scmVersion" ) )
                     {
@@ -698,6 +699,28 @@ public class CreateMojo
             throw new MojoExecutionException( "Cannot get the revision information from the scm repository : \n"
                 + e.getLocalizedMessage(), e );
 
+        }
+
+    }
+
+    /**
+     * Get the revision timestamp from the repository.
+     *
+     * @return
+     * @throws MojoExecutionException
+     */
+    public Date getRevisionTimestamp()
+        throws MojoExecutionException
+    {
+
+        try
+        {
+            return this.getScmRevisionTimestamp();
+        }
+        catch ( ScmException e )
+        {
+            throw new MojoExecutionException("Exception caught while trying to get the revision timestamp : \n"
+                    + e.getLocalizedMessage(), e );
         }
 
     }

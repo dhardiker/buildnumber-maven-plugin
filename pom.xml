@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>buildnumber-maven-plugin</artifactId>
-  <version>3.0.0-abundance</version>
+  <version>3.0.1-abundance</version>
   <packaging>maven-plugin</packaging>
 
   <name>Build Number Maven Plugin</name>

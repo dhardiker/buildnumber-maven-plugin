@@ -22,17 +22,15 @@ package org.codehaus.mojo.build;
  */
 
 import java.io.File;
+import java.util.Date;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.CommandParameter;
-import org.apache.maven.scm.CommandParameters;
-import org.apache.maven.scm.ScmException;
-import org.apache.maven.scm.ScmFileSet;
-import org.apache.maven.scm.ScmResult;
-import org.apache.maven.scm.ScmTag;
+import org.apache.maven.scm.*;
+import org.apache.maven.scm.command.changelog.ChangeLogScmRequest;
+import org.apache.maven.scm.command.changelog.ChangeLogScmResult;
 import org.apache.maven.scm.command.info.InfoItem;
 import org.apache.maven.scm.command.info.InfoScmResult;
 import org.apache.maven.scm.manager.ScmManager;
@@ -277,6 +275,24 @@ public abstract class AbstractScmMojo
                                                                       commandParameters );
     }
 
+    /**
+     * Get changelog from scm.
+     *
+     * @param repository
+     * @param fileSet
+     * @return
+     * @throws ScmException
+     * @todo this should be rolled into org.apache.maven.scm.provider.ScmProvider and
+     *       org.apache.maven.scm.provider.svn.SvnScmProvider
+     */
+    protected ChangeLogScmResult changelog(ScmRepository repository, ScmFileSet fileSet )
+        throws ScmException
+    {
+        ChangeLogScmRequest request = new ChangeLogScmRequest(repository, fileSet);
+        request.setLimit(1);
+        return scmManager.getProviderByRepository(repository).changeLog(request);
+    }
+
     protected String getScmRevision()
         throws ScmException
     {
@@ -302,6 +318,23 @@ public abstract class AbstractScmMojo
         }
 
         return info.getRevision();
+    }
+
+    protected Date getScmRevisionTimestamp()
+        throws ScmException
+    {
+        ScmRepository repository = getScmRepository();
+
+        ChangeLogScmResult scmResult = changelog( repository, new ScmFileSet( scmDirectory ) );
+
+        if ( scmResult == null || scmResult.getChangeLog().getChangeSets() == null || scmResult.getChangeLog().getChangeSets().size() < 1 )
+        {
+            throw new ScmException("Unable to find the latest change set item");
+        }
+
+        checkResult( scmResult );
+
+        return scmResult.getChangeLog().getChangeSets().get(0).getDate();
     }
 
 }
