@@ -21,7 +21,9 @@ package org.codehaus.mojo.build;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.Date;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -323,18 +325,26 @@ public abstract class AbstractScmMojo
     protected Date getScmRevisionTimestamp()
         throws ScmException
     {
-        ScmRepository repository = getScmRepository();
+        StringBuffer output = new StringBuffer();
 
-        ChangeLogScmResult scmResult = changelog( repository, new ScmFileSet( scmDirectory ) );
+        Process p;
+        try {
+            String cmd = "git log -1 --pretty=format:%ct";
+            getLog().info( "Executing: " + cmd );
+            p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-        if ( scmResult == null || scmResult.getChangeLog().getChangeSets() == null || scmResult.getChangeLog().getChangeSets().size() < 1 )
-        {
-            throw new ScmException("Unable to find the latest change set item");
+            String line;
+            while ((line = reader.readLine())!= null) {
+                output.append(line);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        checkResult( scmResult );
-
-        return scmResult.getChangeLog().getChangeSets().get(0).getDate();
+        return new Date(Long.parseLong(output.toString()) * 1000);
     }
 
 }
